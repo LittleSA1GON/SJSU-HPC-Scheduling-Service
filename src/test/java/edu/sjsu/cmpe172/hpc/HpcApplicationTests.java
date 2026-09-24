@@ -1,4 +1,4 @@
-package com.ethanvu.cmpe172hpc;
+package edu.sjsu.cmpe172.hpc;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class HpcReservationApplicationTests {
+class HpcApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -30,10 +30,6 @@ class HpcReservationApplicationTests {
     void resetMutableData() {
         jdbcTemplate.update("DELETE FROM appointments");
         jdbcTemplate.update("UPDATE availability_slots SET status = 'OPEN'");
-    }
-
-    @Test
-    void contextLoads() {
     }
 
     @Test

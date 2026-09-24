@@ -10,7 +10,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.ethanvu</groupId>
+    <groupId>edu.sjsu.cmpe172</groupId>
     <artifactId>cmpe172-hpc-milestone1</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>CMPE172 HPC Milestone 1</name>

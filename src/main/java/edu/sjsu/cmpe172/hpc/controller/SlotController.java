@@ -1,7 +1,7 @@
-package com.ethanvu.cmpe172hpc.controller;
+package edu.sjsu.cmpe172.hpc.controller;
 
-import com.ethanvu.cmpe172hpc.dto.SlotDto;
-import com.ethanvu.cmpe172hpc.service.SlotService;
+import edu.sjsu.cmpe172.hpc.dto.SlotDto;
+import edu.sjsu.cmpe172.hpc.service.SlotService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

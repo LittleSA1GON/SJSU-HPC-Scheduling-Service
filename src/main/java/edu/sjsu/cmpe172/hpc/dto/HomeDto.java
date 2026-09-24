@@ -1,4 +1,4 @@
-package com.ethanvu.cmpe172hpc.dto;
+package edu.sjsu.cmpe172.hpc.dto;
 
 public record HomeDto(
         String application,

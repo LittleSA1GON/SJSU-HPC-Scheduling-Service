@@ -1,7 +1,7 @@
-package com.ethanvu.cmpe172hpc.controller;
+package edu.sjsu.cmpe172.hpc.controller;
 
-import com.ethanvu.cmpe172hpc.dto.HomeDto;
-import com.ethanvu.cmpe172hpc.service.HomeService;
+import edu.sjsu.cmpe172.hpc.dto.HomeDto;
+import edu.sjsu.cmpe172.hpc.service.HomeService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

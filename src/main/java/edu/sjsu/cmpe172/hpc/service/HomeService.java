@@ -1,7 +1,7 @@
-package com.ethanvu.cmpe172hpc.service;
+package edu.sjsu.cmpe172.hpc.service;
 
-import com.ethanvu.cmpe172hpc.dto.HomeDto;
-import com.ethanvu.cmpe172hpc.repository.HomeRepository;
+import edu.sjsu.cmpe172.hpc.dto.HomeDto;
+import edu.sjsu.cmpe172.hpc.repository.HomeRepository;
 import org.springframework.stereotype.Service;
 
 @Service

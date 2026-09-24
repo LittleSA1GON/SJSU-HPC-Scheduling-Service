@@ -1,6 +1,6 @@
-package com.ethanvu.cmpe172hpc.repository;
+package edu.sjsu.cmpe172.hpc.repository;
 
-import com.ethanvu.cmpe172hpc.dto.SlotDto;
+import edu.sjsu.cmpe172.hpc.dto.SlotDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 

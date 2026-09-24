@@ -1,4 +1,4 @@
-package com.ethanvu.cmpe172hpc.repository;
+package edu.sjsu.cmpe172.hpc.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
