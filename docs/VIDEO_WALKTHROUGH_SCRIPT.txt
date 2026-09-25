@@ -1,0 +1,73 @@
+SJSU HPC SCHEDULING SERVICE - MILESTONE 1 VIDEO WALKTHROUGH
+Target length: 6-8 minutes
+
+Before recording
+- Open the submitted ERD, wireframe, README, schema.sql, seed.sql, Java layers, DTOs, and tests.
+- Run "mvn clean test" and "mvn spring-boot:run".
+- Prepare GET / and GET /slots in a browser, curl, or Postman.
+
+0:00-0:40 - INTRODUCTION
+
+"This is the Milestone 1 walkthrough for the SJSU HPC Scheduling Service. It is a simulated reservation system for university high-performance computing resources. The wireframe shows a customer finding compute time, selecting a slot, reviewing the choice, and receiving confirmation. Milestone 1 implements the required database and layered read-only skeleton, not the complete interactive booking workflow."
+
+Show the repository and wireframe.
+
+0:40-2:10 - SUBMITTED ERD
+
+"The database follows the submitted ERD with five entities: User, Provider, Service, Availability Slot, and Appointment. The wireframe says reservation, while the ERD says appointment; both terms mean the same booking record.
+
+User stores identity, credentials, display name, and role. Provider is a specialization of User. Its user_id foreign key is unique, so one user can own at most one provider profile.
+
+Service stores the compute offering: name, description, duration, partition hint, and optional GPU type. Availability Slot connects one provider and one service to a start time, end time, and status. Appointment connects one customer, one slot, and one service and records status and creation time.
+
+The relationships are one user to many appointments, one provider to many slots, one service to many slots, and one slot to zero or one appointment. Each table has its own primary key, so there are no weak entities in the relational implementation."
+
+2:10-3:25 - SCHEMA AND DOUBLE-BOOKING RULE
+
+Show schema.sql.
+
+"schema.sql mirrors the ERD fields. The provider primary key is provider_id, and Provider does not duplicate the user's display name. Service contains only the fields shown in the ERD. Appointment contains customer_id, slot_id, service_id, status, and created_at.
+
+Primary and foreign keys enforce the relationships. CHECK constraints restrict valid roles and statuses, require a positive duration, and require an end time after the start time. A provider, service, start, and end uniqueness rule prevents duplicate slot publication.
+
+The double-booking guard is UNIQUE on appointments.slot_id. Even if two requests race after seeing an available slot, the database accepts at most one appointment for that slot. This protects integrity below the controller layer. SQLite foreign keys are enabled on every pooled connection in application.properties."
+
+Show seed.sql.
+
+"seed.sql supplies two users, one provider, three services, and three open slots. The provider name displayed by the application comes from the related User display_name, so the Provider table does not contain a redundant name column."
+
+3:25-5:10 - LAYERED REQUEST FLOW
+
+Show HomeController, HomeService, HomeRepository, and HomeDto.
+
+"For GET slash, Spring's DispatcherServlet receives the request and dispatches it to HomeController. The controller delegates to HomeService. The service requests provider, service, and available-slot counts from HomeRepository and creates HomeDto. The repository executes hand-written SQL through JdbcTemplate. Spring serializes the DTO as JSON.
+
+This separation keeps HTTP routing in controllers, application coordination in services, SQL in repositories, and response structure in DTOs. Constructor injection makes dependencies explicit."
+
+Show SlotController, SlotService, SlotRepository, and SlotDto.
+
+"GET slash slots follows the same layers. SlotRepository joins availability slots to providers, joins the provider's User row for display_name, and joins services for compute details. It left-joins appointments and returns only OPEN slots with no appointment. Each row becomes SlotDto with provider, service, duration, partition, GPU, date, time, and status data.
+
+The repository does not duplicate Provider display_name or invent a compute_type column because those fields are not present in the submitted ERD. The wireframe's compute choice is represented by the Service name, partition hint, and GPU type. Purpose and notes shown in the review form are not persisted in Milestone 1 because they are not ERD fields."
+
+5:10-5:50 - FRONT CONTROLLER EXPLANATION
+
+"A Page Controller handles a particular rendered page or page family, as in a server-rendered Thymeleaf application. A Front Controller is a shared entry point that dispatches requests. This project returns REST JSON, so Spring MVC's DispatcherServlet is the Front Controller. It receives every web request and dispatches to HomeController or SlotController."
+
+5:50-7:00 - TESTS AND DEMO
+
+Show HpcApplicationTests.java.
+
+"The integration tests start the Spring context with a separate SQLite database. They verify that foreign keys are enabled and that the expected seed data loads. MockMvc verifies that GET slash returns the home DTO and GET slash slots returns three slot DTOs from the database.
+
+Another test inserts an appointment and proves that the booked slot disappears from the available list. The database tests confirm that a second appointment for the same slot is rejected and that an unknown customer foreign key is rejected."
+
+Show the successful Maven result, then GET / and GET /slots.
+
+"The running endpoints demonstrate the complete Controller-Service-Repository flow. They return JSON because Milestone 1 establishes the backend skeleton. The wireframe remains the design target for later interactive screens."
+
+7:00-7:30 - CLOSING
+
+"In summary, the project uses Java 21, Spring Boot, JDBC, hand-written SQL, and SQLite with no ORM. The schema matches the submitted five-entity ERD, prevents double-booking at the database level, loads sample data, exposes two DTO endpoints, and keeps the code separated into controller, service, and repository layers. Later milestones will add authentication, booking and cancellation commands, the browser interface, notifications, observability, and AI features."
+
+END OF VIDEO SCRIPT

@@ -1,0 +1,195 @@
+SJSU CMPE 172 - TERM PROJECT
+MILESTONE 1 - REQUIREMENTS, DESIGN, AND SKELETON
+
+Project: SJSU HPC Scheduling Service
+Student: [REPLACE WITH STUDENT NAME]
+Repository: https://github.com/LittleSA1GON/SJSU-HPC-Scheduling-Service
+Video: [ADD UNLISTED VIDEO LINK]
+
+1. PROJECT PROPOSAL
+
+The SJSU HPC Scheduling Service is a simulated reservation system for university high-performance computing resources. Customers search for an available CPU or GPU compute window and reserve a slot for a workload. Provider administrators publish availability and view appointments tied to their resources. This course project is not connected to a live SJSU cluster.
+
+The HCI wireframe uses the word "reservation." The submitted ERD uses the entity name "Appointment." In this project, both terms describe the same booking record.
+
+2. USER ROLES
+
+Customer
+- Logs in.
+- Browses available compute slots.
+- Selects and books a slot for a service.
+- Views upcoming and historical appointments.
+- Cancels only an owned appointment.
+
+Provider administrator
+- Logs in.
+- Creates and removes availability slots tied to a service.
+- Views appointments booked with the provider.
+
+3. CORE FEATURES AND ROADMAP
+
+1. Customer login.
+2. Browse, filter, and paginate available slots by provider, service, and date using SQL LIMIT and OFFSET.
+3. Book a slot for a chosen service.
+4. View my appointments, including upcoming appointments and history.
+5. Cancel my appointment with an owner-only rule.
+6. Provider login.
+7. Provider creation and removal of availability slots tied to a service.
+8. Provider view of appointments booked with that provider.
+9. Confirmation through a mock external service on booking or cancellation.
+10. Logging, a health endpoint, and at least one metric.
+11. A conversational booking agent and an autonomous agent.
+12. Grounded question answering over a small knowledge base.
+
+Milestone 1 implements only the required skeleton and two read endpoints. Features 1-8 are planned for Milestone 2, features 9-10 for Milestone 3, and features 11-12 for Milestone 4.
+
+4. ARCHITECTURE AND TECHNOLOGY
+
+[Browser or API Client]
+          |
+          v
+[Spring Boot REST Controllers]
+          |
+          v
+       Services
+          |
+          v
+  JDBC Repositories  --------> [Mock external-service boundary]
+          |
+          v
+   [SQLite Database]
+
+The project uses Java 21, Spring Boot 3.3, Spring Web, Spring JDBC, and SQLite. Repository classes execute hand-written SQL through JdbcTemplate. No object-relational mapper is used.
+
+The project realizes classic enterprise standards on a modern stack: Spring Boot provides the modern equivalent of the J2EE application platform, while REST provides a web-oriented alternative to CORBA-style distributed objects.
+
+5. ERD AND RELATIONAL SCHEMA
+
+The database follows the submitted ERD without adding application fields that are not shown in it.
+
+users(
+  id PK,
+  username UNIQUE NOT NULL,
+  email UNIQUE NOT NULL,
+  password_hash NOT NULL,
+  display_name NOT NULL,
+  role NOT NULL
+)
+
+providers(
+  provider_id PK,
+  user_id FK -> users.id UNIQUE NOT NULL,
+  description NULL
+)
+
+services(
+  id PK,
+  name UNIQUE NOT NULL,
+  description NULL,
+  duration_minutes NOT NULL,
+  partition_hint NULL,
+  gpu_type NULL
+)
+
+availability_slots(
+  id PK,
+  provider_id FK -> providers.provider_id NOT NULL,
+  service_id FK -> services.id NOT NULL,
+  start_time NOT NULL,
+  end_time NOT NULL,
+  status NOT NULL
+)
+
+appointments(
+  id PK,
+  customer_id FK -> users.id NOT NULL,
+  slot_id FK -> availability_slots.id UNIQUE NOT NULL,
+  service_id FK -> services.id NOT NULL,
+  status NOT NULL,
+  created_at NOT NULL
+)
+
+6. RELATIONSHIPS AND CONSTRAINTS
+
+User to provider is a one-to-zero-or-one specialization. Every provider row belongs to one user, and providers.user_id is unique so one user cannot own multiple provider profiles.
+
+User to appointment is one-to-many. Each appointment belongs to one customer, and a customer may book multiple appointments.
+
+Provider to availability slot is one-to-many. Each slot is published by one provider, and one provider may publish many slots.
+
+Service to availability slot is one-to-many. Each slot offers one service, and a service may appear in many slots.
+
+Availability slot to appointment is one-to-zero-or-one. appointments.slot_id is unique, so two appointment records cannot reserve the same slot. This database constraint prevents double-booking even if concurrent requests both observe that a slot is available.
+
+Service to appointment is one-to-many. Each appointment references one service, and a service may be used by many appointments.
+
+Every entity has its own primary key, so the relational implementation has no weak entity. Required foreign keys still enforce the existence dependencies shown by the ERD.
+
+Additional checks restrict user roles and row statuses, require a positive service duration, and require each slot's end time to be later than its start time. A unique provider/service/start/end constraint prevents duplicate slot publication. SQLite foreign keys are enabled for every pooled connection.
+
+7. WIREFRAME ALIGNMENT
+
+Find Compute Time
+- Compute type is represented by the selected service, its name, partition_hint, and optional gpu_type.
+- Date comes from availability_slots.start_time.
+- Duration comes from services.duration_minutes.
+
+Choose an Available Slot
+- Provider name comes from users.display_name through providers.user_id.
+- Time comes from availability_slots.start_time and end_time.
+- A slot is available when its status is OPEN and no appointment references it.
+
+Review Reservation
+- The summary joins the chosen provider, service, and slot.
+- Purpose, notes, and the review checkbox appear in the wireframe but are not fields in the submitted ERD. They are not persisted in Milestone 1. Persisting them would require a later approved ERD revision.
+
+Reservation Confirmed
+- Reservation number is appointments.id.
+- Compute information comes from services.
+- Date and time come from availability_slots.
+- Confirmation status comes from appointments.status.
+
+8. REQUEST FLOW
+
+GET /
+1. Spring's DispatcherServlet receives the request and dispatches it to HomeController.
+2. HomeController calls HomeService.
+3. HomeService requests counts from HomeRepository.
+4. HomeRepository executes SQL through JdbcTemplate.
+5. HomeService returns HomeDto, which Spring serializes as JSON.
+
+GET /slots
+1. DispatcherServlet dispatches the request to SlotController.
+2. SlotController calls SlotService.
+3. SlotService calls SlotRepository.
+4. SlotRepository joins availability_slots, providers, the provider's users row, and services.
+5. A left join to appointments excludes already-booked slots.
+6. Each row is mapped to SlotDto and returned as JSON.
+
+Controllers handle HTTP routing, services represent the application layer, repositories contain SQL, and DTOs define API responses.
+
+9. PAGE CONTROLLER VS. FRONT CONTROLLER
+
+A Page Controller handles one rendered page or page family. A server-rendered Thymeleaf application commonly follows this pattern.
+
+A Front Controller is one shared entry point that dispatches requests. This project uses Spring MVC's DispatcherServlet as the Front Controller. It receives all REST requests and dispatches them to HomeController or SlotController. Because the current skeleton returns JSON rather than Thymeleaf pages, Front Controller describes the implemented architecture.
+
+10. SEED DATA, TESTS, AND SCOPE
+
+schema.sql creates the five ERD tables and their constraints. seed.sql inserts two users, one provider, three services, and three open slots.
+
+The tests verify foreign-key enforcement, seed counts, both database-reading endpoints, exclusion of a booked slot, rejection of a second appointment for the same slot, and rejection of an unknown customer.
+
+Run:
+
+mvn clean test
+mvn spring-boot:run
+
+Then request:
+
+GET http://localhost:8080/
+GET http://localhost:8080/slots
+
+Milestone 1 does not claim to implement authentication, booking commands, cancellation, the interactive screens, notifications, observability, or AI features.
+
+END OF REPORT

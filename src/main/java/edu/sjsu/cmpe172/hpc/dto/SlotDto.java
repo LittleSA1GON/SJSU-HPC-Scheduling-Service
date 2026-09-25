@@ -11,7 +11,6 @@ public record SlotDto(
         long serviceId,
         String serviceName,
         int durationMinutes,
-        int priceCents,
         String partitionHint,
         String gpuType,
         String startTime,

@@ -18,19 +18,19 @@ public class SlotRepository {
         String sql = """
                 SELECT
                     s.id AS slot_id,
-                    p.id AS provider_id,
-                    p.display_name AS provider_name,
+                    p.provider_id,
+                    provider_user.display_name AS provider_name,
                     sv.id AS service_id,
                     sv.name AS service_name,
                     sv.duration_minutes,
-                    sv.price_cents,
                     sv.partition_hint,
                     sv.gpu_type,
                     s.start_time,
                     s.end_time,
                     s.status
                 FROM availability_slots s
-                JOIN providers p ON p.id = s.provider_id
+                JOIN providers p ON p.provider_id = s.provider_id
+                JOIN users provider_user ON provider_user.id = p.user_id
                 JOIN services sv ON sv.id = s.service_id
                 LEFT JOIN appointments a
                     ON a.slot_id = s.id AND a.status = 'BOOKED'
@@ -45,7 +45,6 @@ public class SlotRepository {
                 rs.getLong("service_id"),
                 rs.getString("service_name"),
                 rs.getInt("duration_minutes"),
-                rs.getInt("price_cents"),
                 rs.getString("partition_hint"),
                 rs.getString("gpu_type"),
                 rs.getString("start_time"),

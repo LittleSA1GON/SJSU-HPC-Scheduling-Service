@@ -1,21 +1,19 @@
-# CMPE 172 Milestone 1 - HPC Resource Reservation
+# SJSU HPC Scheduling Service - CMPE 172 Milestone 1
 
-Running Spring Boot skeleton for a simulated HPC resource reservation system.
+Minimal Spring Boot and SQLite skeleton for a simulated HPC reservation service.
 
-## Milestone 1 deliverable
+## Included
 
-- Java 21 and Spring Boot 3.3
-- Spring Web and Spring JDBC with hand-written SQL
-- SQLite database; no ORM
+- Java 21, Spring Boot 3.3, Spring Web, and Spring JDBC
+- Hand-written SQL through `JdbcTemplate`; no ORM
 - Controller -> Service -> Repository -> Database layering
-- DTO responses from `GET /` and `GET /slots`
-- Required `users`, `providers`, `services`, `availability_slots`, and
-  `appointments` tables
-- Seed data and a database-level `UNIQUE (slot_id)` double-booking guard
+- `GET /` and `GET /slots` DTO endpoints
+- `schema.sql` matching the submitted five-entity ERD
+- `seed.sql` with sample users, provider, services, and slots
+- Database-level `UNIQUE (slot_id)` double-booking protection
+- Submitted ERD, HCI wireframe, report text, and video walkthrough text under `docs/`
 
-Only the Milestone 1 skeleton is implemented. Authentication, booking and
-cancellation workflows, notifications, deployment, and AI features belong to
-later milestones.
+The wireframe calls a booking a reservation. The submitted ERD and database use the entity name `appointments`; both terms refer to the same booking record.
 
 ## Build and run
 
@@ -26,16 +24,15 @@ mvn clean test
 mvn spring-boot:run
 ```
 
-The demo database is rebuilt and seeded at startup. No environment variables
-are required.
+The demo database is recreated and seeded at startup.
 
 ```text
 GET http://localhost:8080/
 GET http://localhost:8080/slots
 ```
 
-Expected seed data: 1 provider, 3 services, and 3 available slots.
+Expected seed data: 2 users, 1 provider, 3 services, and 3 available slots.
 
-## Walkthrough video
+## Milestone 1 scope
 
-Add the unlisted video URL before submission.
+This repository implements only the required database-reading skeleton. Authentication, booking commands, cancellation, the interactive wireframe screens, notifications, observability, and AI features belong to later milestones.

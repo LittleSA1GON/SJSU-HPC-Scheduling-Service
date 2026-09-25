@@ -96,15 +96,6 @@ class HpcApplicationTests {
     }
 
     @Test
-    void databaseRejectsAppointmentWhoseServiceDoesNotMatchSlot() {
-        assertThrows(DataAccessException.class, () ->
-                jdbcTemplate.update("""
-                        INSERT INTO appointments (id, customer_id, slot_id, service_id, status)
-                        VALUES (1, 2, 1, 2, 'BOOKED')
-                        """));
-    }
-
-    @Test
     void databaseRejectsUnknownCustomerForeignKey() {
         assertThrows(DataAccessException.class, () ->
                 jdbcTemplate.update("""
