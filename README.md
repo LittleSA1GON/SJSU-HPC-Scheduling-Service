@@ -1,6 +1,6 @@
 # SJSU HPC Scheduling Service - CMPE 172 Milestone 1
 
-Minimal Spring Boot and SQLite skeleton for a simulated HPC reservation service.
+Spring Boot and SQLite skeleton for a simulated HPC reservation service.
 
 ## Included
 
