@@ -11,16 +11,28 @@
     </parent>
 
     <groupId>edu.sjsu.cmpe172</groupId>
-    <artifactId>cmpe172-hpc-milestone1</artifactId>
+    <artifactId>cmpe172-hpc-scheduling</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>CMPE172 HPC Milestone 1</name>
-    <description>HPC Resource Reservation and Job Scheduling skeleton for CMPE 172</description>
+    <name>CMPE172 HPC Scheduling Service</name>
+    <description>Session-authenticated HPC booking with optimistic concurrency control</description>
 
     <properties>
         <java.version>21</java.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -37,6 +49,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

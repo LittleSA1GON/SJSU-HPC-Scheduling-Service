@@ -1,38 +1,59 @@
-# SJSU HPC Scheduling Service - CMPE 172 Milestone 1
+# SJSU HPC Scheduling Service — Milestone 2
 
-Spring Boot and SQLite skeleton for a simulated HPC reservation service.
+A booking system for simulated HPC resources with customer reservations and provider availability management.
 
-## Included
+## Stack
 
-- Java 21, Spring Boot 3.3, Spring Web, and Spring JDBC
-- Hand-written SQL through `JdbcTemplate`; no ORM
-- Controller -> Service -> Repository -> Database layering
-- `GET /` and `GET /slots` DTO endpoints
-- `schema.sql` matching the submitted five-entity ERD
-- `seed.sql` with sample users, provider, services, and slots
-- Database-level `UNIQUE (slot_id)` double-booking protection
-- Submitted ERD, HCI wireframe, report text, and video walkthrough text under `docs/`
+Java 21, Maven 3.9+, Spring Boot 3.3.5, Thymeleaf, Spring Security, handwritten JDBC SQL, and SQLite.
 
-The wireframe calls a booking a reservation. The submitted ERD and database use the entity name `appointments`; both terms refer to the same booking record.
-
-## Build and run
-
-Requirements: JDK 21+ and Maven 3.9+.
+## Run
 
 ```bash
-mvn clean test
+mvn test
 mvn spring-boot:run
 ```
 
-The demo database is recreated and seeded at startup.
+Open http://127.0.0.1:8080/. Times use `America/Los_Angeles`; startup preserves data and adds missing future demo availability.
 
-```text
-GET http://localhost:8080/
-GET http://localhost:8080/slots
-```
+## Demo accounts
 
-Expected seed data: 2 users, 1 provider, 3 services, and 3 available slots.
+| Account | Role | Password |
+| --- | --- | --- |
+| `student-researcher`, `second-researcher` | CUSTOMER | `HpcDemo172!` |
+| `hpc-admin`, `lab-admin` | PROVIDER_ADMIN | `HpcDemo172!` |
 
-## Milestone 1 scope
+These public demo credentials are stored as BCrypt hashes. Login uses server-side sessions and JDBC roles; modifying requests require CSRF tokens.
 
-This repository implements only the required database-reading skeleton. Authentication, booking commands, cancellation, the interactive wireframe screens, notifications, observability, and AI features belong to later milestones.
+## API
+
+| Method / endpoint | Access | Purpose |
+| --- | --- | --- |
+| `GET /api/auth/csrf` | Public | CSRF token and header name |
+| `POST /api/auth/login` | Public, CSRF | URL-encoded username/password; creates session |
+| `GET /api/auth/me` | Public | Signed-in identity/role; 204 when anonymous |
+| `POST /api/auth/logout` | Session, CSRF | Invalidate session |
+| `GET /api/catalog` | Public | Services, providers, date, time zone |
+| `GET /api/slots` | Public | Filter by provider/service/date/duration; SQL pagination |
+| `POST /api/appointments` | Customer, CSRF | Book with slot/service IDs, version, project, requirements, email |
+| `GET /api/appointments` | Customer | Own upcoming/history/all reservations |
+| `GET /api/appointments/{id}` | Customer owner | Reservation details |
+| `POST /api/appointments/{id}/cancel` | Customer owner, CSRF | Cancel before start; retain history |
+| `GET /api/provider/slots` | Provider | Own availability, including CLOSED slots |
+| `POST /api/provider/slots` | Provider, CSRF | Create service availability with future start/end times |
+| `DELETE /api/provider/slots/{id}?version=...` | Owning provider, CSRF | Close an unbooked slot |
+| `GET /api/provider/appointments` | Provider | Reservations booked with this provider |
+
+Pagination uses zero-based `page` and `size` 1–100. Slot filters: `providerId`, `serviceId`, `date`, `durationMinutes`, `availableOnly`. Reservation views: `upcoming`, `history`, `all`. Statuses: BOOKED, CANCELLED, COMPLETED. Input errors return standard JSON without stack traces; wrong-role requests return 403.
+
+## Concurrency design
+
+Booking uses an optimistic slot `version` claim inside a `SERIALIZABLE` transaction.
+The conditional update and appointment insert commit together; insert failure rolls back the claim.
+The partial unique `uq_appointment_slot` index permits cancelled history and prevents duplicate BOOKED/COMPLETED appointments.
+Owner-only cancellation releases availability and increments the slot version; removal preserves CLOSED slots and history.
+SQLite WAL serializes writers; BUSY/LOCKED errors retry the entire transaction at most three times through separate transaction beans.
+Logical conflicts return 409; exhausted database contention returns 503.
+
+## Tests
+
+12 service unit tests and 13 integration tests cover validation, ownership, RBAC/CSRF, SQL pagination, rollback, rebooking, provider management, completion, and startup persistence. The two-thread HTTP booking test asserts exactly one 201, one 409, one stored appointment, and one version increment. Tests use separate file-backed databases under `target/`.

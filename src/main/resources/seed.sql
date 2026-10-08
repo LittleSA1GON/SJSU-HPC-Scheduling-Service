@@ -1,17 +1,13 @@
--- Illustrative Milestone 1 data only. These are not live SJSU HPC reservations.
-INSERT INTO users (id, username, email, password_hash, display_name, role) VALUES
-(1, 'hpc-admin', 'hpc-admin@example.edu', '$2a$10$MILESTONE1PLACEHOLDERHASH000000000000000000000000000', 'HPC Resource Administrator', 'PROVIDER_ADMIN'),
-(2, 'student-researcher', 'student@example.edu', '$2a$10$MILESTONE1PLACEHOLDERHASH000000000000000000000000000', 'Sample Student Researcher', 'CUSTOMER');
-
-INSERT INTO providers (provider_id, user_id, description) VALUES
-(1, 1, 'Provider profile for managing simulated app-level HPC resource availability.');
-
-INSERT INTO services (id, name, description, duration_minutes, partition_hint, gpu_type) VALUES
-(1, 'CPU Batch Compute', 'App-level reservation for a CPU batch workload.', 120, 'compute', NULL),
-(2, 'A100 GPU Compute', 'App-level reservation for an accelerated GPU workload.', 120, 'gpu', 'A100'),
-(3, 'H100 GPU Compute', 'App-level reservation for an accelerated GPU workload.', 120, 'gpu', 'H100');
-
-INSERT INTO availability_slots (id, provider_id, service_id, start_time, end_time, status) VALUES
-(1, 1, 1, '2026-10-01T09:00:00', '2026-10-01T11:00:00', 'OPEN'),
-(2, 1, 2, '2026-10-01T13:00:00', '2026-10-01T15:00:00', 'OPEN'),
-(3, 1, 3, '2026-10-02T10:00:00', '2026-10-02T12:00:00', 'OPEN');
+-- Simulated reservations only; demo BCrypt hashes are initialized on first startup.
+INSERT OR IGNORE INTO users (id, username, email, password_hash, display_name, role) VALUES
+(1, 'hpc-admin', 'hpc-admin@example.edu', 'DEMO_HASH_PENDING', 'HPC Admin', 'PROVIDER_ADMIN'),
+(2, 'student-researcher', 'student@example.edu', 'DEMO_HASH_PENDING', 'Ethan', 'CUSTOMER'),
+(3, 'second-researcher', 'researcher@example.edu', 'DEMO_HASH_PENDING', 'Alex', 'CUSTOMER'),
+(4, 'lab-admin', 'lab-admin@example.edu', 'DEMO_HASH_PENDING', 'Research Lab Admin', 'PROVIDER_ADMIN');
+INSERT OR IGNORE INTO providers (provider_id, user_id, description) VALUES
+(1, 1, 'SJSU HPC simulated compute resources.'),
+(2, 4, 'Research laboratory simulated compute resources.');
+INSERT OR IGNORE INTO services (id, name, description, duration_minutes, partition_hint, gpu_type) VALUES
+(1, 'CPU Compute', 'General purpose compute nodes', 120, 'compute', NULL),
+(2, 'GPU Compute', 'GPU-accelerated compute nodes', 120, 'gpu', '4 x A100'),
+(3, 'Storage Access', 'High-performance storage resources', 120, 'storage', NULL);

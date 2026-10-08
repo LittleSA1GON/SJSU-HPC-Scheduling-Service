@@ -15,6 +15,7 @@ public record SlotDto(
         String gpuType,
         String startTime,
         String endTime,
-        String status
+        String status,
+        long version
 ) {
 }

@@ -1,65 +1,39 @@
+PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
-
-DROP TABLE IF EXISTS appointments;
-DROP TABLE IF EXISTS availability_slots;
-DROP TABLE IF EXISTS services;
-DROP TABLE IF EXISTS providers;
-DROP TABLE IF EXISTS users;
-
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    display_name TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY, username TEXT NOT NULL UNIQUE, email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL, display_name TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('CUSTOMER', 'PROVIDER_ADMIN'))
 );
-
-CREATE TABLE providers (
-    provider_id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL UNIQUE,
-    description TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+CREATE TABLE IF NOT EXISTS providers (
+    provider_id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL UNIQUE REFERENCES users(id), description TEXT
 );
-
-CREATE TABLE services (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    description TEXT,
-    duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
-    partition_hint TEXT,
-    gpu_type TEXT
+CREATE TABLE IF NOT EXISTS services (
+    id INTEGER PRIMARY KEY, name TEXT NOT NULL UNIQUE, description TEXT,
+    duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0), partition_hint TEXT, gpu_type TEXT
 );
-
-CREATE TABLE availability_slots (
-    id INTEGER PRIMARY KEY,
-    provider_id INTEGER NOT NULL,
-    service_id INTEGER NOT NULL,
-    start_time TEXT NOT NULL,
-    end_time TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS availability_slots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    provider_id INTEGER NOT NULL REFERENCES providers(provider_id),
+    service_id INTEGER NOT NULL REFERENCES services(id),
+    start_time TEXT NOT NULL, end_time TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED')),
-    FOREIGN KEY (provider_id) REFERENCES providers(provider_id),
-    FOREIGN KEY (service_id) REFERENCES services(id),
-    CHECK (end_time > start_time),
-    UNIQUE (provider_id, service_id, start_time, end_time)
+    version INTEGER NOT NULL DEFAULT 0 CHECK (version >= 0),
+    CHECK (end_time > start_time), UNIQUE (provider_id, service_id, start_time, end_time)
 );
-
-CREATE TABLE appointments (
-    id INTEGER PRIMARY KEY,
-    customer_id INTEGER NOT NULL,
-    slot_id INTEGER NOT NULL,
-    service_id INTEGER NOT NULL,
-    status TEXT NOT NULL DEFAULT 'BOOKED'
-        CHECK (status IN ('BOOKED', 'CANCELLED')),
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES users(id),
-    FOREIGN KEY (slot_id) REFERENCES availability_slots(id),
-    FOREIGN KEY (service_id) REFERENCES services(id),
-    CONSTRAINT uq_appointment_slot UNIQUE (slot_id)
+CREATE TABLE IF NOT EXISTS appointments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_id INTEGER NOT NULL REFERENCES users(id),
+    slot_id INTEGER NOT NULL REFERENCES availability_slots(id),
+    service_id INTEGER NOT NULL REFERENCES services(id),
+    status TEXT NOT NULL DEFAULT 'BOOKED' CHECK (status IN ('BOOKED', 'CANCELLED', 'COMPLETED')),
+    project_name TEXT NOT NULL CHECK (length(project_name) BETWEEN 1 AND 120),
+    resource_requirements TEXT NOT NULL DEFAULT '' CHECK (length(resource_requirements) <= 200),
+    contact_email TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE INDEX idx_slots_status_start
-    ON availability_slots(status, start_time);
-
-CREATE INDEX idx_appointments_customer
-    ON appointments(customer_id);
+-- Cancelled history is retained; exactly one non-cancelled booking per slot.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_appointment_slot
+    ON appointments(slot_id) WHERE status IN ('BOOKED', 'COMPLETED');
+CREATE INDEX IF NOT EXISTS idx_slots_status_start ON availability_slots(status, start_time);
+CREATE INDEX IF NOT EXISTS idx_slots_provider_service_start ON availability_slots(provider_id, service_id, start_time);
+CREATE INDEX IF NOT EXISTS idx_appointments_customer ON appointments(customer_id);

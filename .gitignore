@@ -1,7 +1,12 @@
 target/
 .mvn-local-repo/
 *.db
+*.db-shm
+*.db-wal
+*.db-journal
+output/
 .idea/
 .vscode/
 *.iml
 .DS_Store
+agent communication/
