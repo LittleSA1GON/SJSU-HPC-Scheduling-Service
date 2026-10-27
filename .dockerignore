@@ -1,0 +1,8 @@
+target/
+.mvn-local-repo/
+output/
+tmp/
+agent communication/
+.git/
+*.db*
+docs/

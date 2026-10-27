@@ -5,6 +5,7 @@ target/
 *.db-wal
 *.db-journal
 output/
+tmp/
 .idea/
 .vscode/
 *.iml

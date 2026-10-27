@@ -29,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class HpcApplicationTests {
+    @org.springframework.boot.test.mock.mockito.MockBean
+    edu.sjsu.cmpe172.hpc.notification.NotificationClient notifications;
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper json;

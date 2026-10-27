@@ -4,6 +4,9 @@ import edu.sjsu.cmpe172.hpc.dto.*;
 import edu.sjsu.cmpe172.hpc.exception.ApiException;
 import edu.sjsu.cmpe172.hpc.repository.*;
 import edu.sjsu.cmpe172.hpc.service.*;
+import edu.sjsu.cmpe172.hpc.notification.*;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.mockito.ArgumentCaptor;
 import jakarta.validation.*;
 import java.sql.SQLException;
 import java.time.*;
@@ -83,7 +86,8 @@ class BookingServiceTests {
     @Test void serviceValidatesInputsBeforeEnteringTransaction() {
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             BookingTransactionService worker = mock(BookingTransactionService.class);
-            BookingService service = new BookingService(worker, appointments, new SqliteRetry(), clock, factory.getValidator());
+            BookingService service = new BookingService(worker, appointments, new SqliteRetry(), clock, factory.getValidator(),
+                mock(NotificationClient.class), new SimpleMeterRegistry());
             assertThrows(ConstraintViolationException.class, () -> service.book(2,
                 new BookingRequest(0L, 2L, -1L, " ", "x".repeat(201), "not-email")));
             verifyNoInteractions(worker);
@@ -105,5 +109,24 @@ class BookingServiceTests {
             calls.incrementAndGet(); throw new UncategorizedSQLException("test", "", new SQLException("busy", "", 5));
         }));
         assertEquals(3, calls.get()); assertEquals(503, error.status().value());
+    }
+    @Test void notifiesAfterCommitAndBookingSurvivesNotificationFailure() {
+        var meters = new SimpleMeterRegistry();
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            var worker = mock(BookingTransactionService.class);
+            var client = mock(NotificationClient.class);
+            var expected = appointment(2, "BOOKED");
+            when(worker.book(2, request)).thenReturn(expected);
+            when(client.send(any())).thenReturn(false);
+            var service = new BookingService(worker, appointments, new SqliteRetry(), clock, factory.getValidator(), client, meters);
+            assertEquals(expected, service.book(2, request));
+            var order = inOrder(worker, client);
+            order.verify(worker).book(2, request);
+            var sent = ArgumentCaptor.forClass(NotificationRequest.class);
+            order.verify(client).send(sent.capture());
+            assertEquals(NotificationType.BOOKING_CONFIRMED, sent.getValue().type());
+            assertEquals("appointment-10-BOOKING_CONFIRMED", sent.getValue().idempotencyKey());
+            assertEquals(1, meters.get("hpc.bookings").tag("outcome", "created").counter().count());
+        } finally { meters.close(); }
     }
 }

@@ -21,10 +21,12 @@ public class SecurityConfig {
         // Session-backed CSRF and session-fixation protection remain enabled.
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico", "/error",
-                             "/api/auth/csrf", "/api/auth/me", "/api/catalog", "/api/slots").permitAll()
+                             "/api/auth/csrf", "/api/auth/me", "/api/catalog", "/api/slots",
+                             "/health", "/metrics", "/metrics/**", "/notification-service/**").permitAll()
             .requestMatchers("/api/provider/**").hasRole("PROVIDER_ADMIN")
             .requestMatchers("/api/appointments/**").hasRole("CUSTOMER")
             .anyRequest().authenticated())
+            .csrf(c -> c.ignoringRequestMatchers("/notification-service/**"))
             .formLogin(login -> login.loginProcessingUrl("/api/auth/login")
                 .successHandler((req, res, auth) -> res.setStatus(204))
                 .failureHandler((req, res, ex) -> writeError(json, req, res, 401,
