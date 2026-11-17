@@ -1,0 +1,17 @@
+HPC-DEMO-01 | Hours and time zone
+This is a synthetic teaching environment, not an official SJSU HPC policy. All reservation times use America/Los_Angeles. Customers may browse online at any time. Actual resource access is limited to availability published by the provider. Never promise hours or slots that are absent from the availability tools.
+
+HPC-DEMO-02 | Services
+The demo catalog offers CPU Compute Session, GPU Compute Session, and Storage Access. GPU and CPU details, providers, and durations are listed in the live catalog and availability results. Choose a GPU session for workloads requiring GPU acceleration; ask about workload and resource requirements before making a recommendation. Reservations do not provision real HPC resources.
+
+HPC-DEMO-03 | Booking rules
+A customer must sign in before booking. A project name is required, limited to 120 characters; optional resource requirements are limited to 200 characters. The assistant uses the signed-in account email for booking notifications. A slot must be open and start in the future. One active reservation is permitted per slot. Viewing or proposing a slot does not hold it. The customer must review the exact summary and explicitly confirm before the assistant commits a reservation.
+
+HPC-DEMO-04 | Cancellation
+Customers can cancel only their own booked reservation before its start time. Cancellation preserves history and releases the slot for another customer. Completed reservations cannot be cancelled. There is no cancellation fee in this demo. Provider administrators manage availability; they cannot book as customers. Assistant cancellations also require explicit confirmation.
+
+HPC-DEMO-05 | Acceptable use and privacy
+Use only non-sensitive teaching and research data in this demo. Do not enter passwords, API keys, confidential datasets, or regulated data into chat or project details. Gemini receives user chat, retrieved policy excerpts, and tool results needed to answer. The reminder generator receives the service, time, and project name, but not the customer's email. The local notification mock receives the email and generated reminder but does not deliver real email or SMS.
+
+HPC-DEMO-06 | Reminders and failures
+The scheduled assistant checks for booked reservations starting within the next 24 hours and generates a short reminder. Notification service failures do not undo a reservation. A later scheduled sweep retries eligible reminders that were not accepted. If a booking conflicts with another customer, refresh availability and offer another slot. For official campus policy, contact the actual HPC administrator; this synthetic FAQ does not establish university policy.

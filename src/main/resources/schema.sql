@@ -37,3 +37,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_appointment_slot
 CREATE INDEX IF NOT EXISTS idx_slots_status_start ON availability_slots(status, start_time);
 CREATE INDEX IF NOT EXISTS idx_slots_provider_service_start ON availability_slots(provider_id, service_id, start_time);
 CREATE INDEX IF NOT EXISTS idx_appointments_customer ON appointments(customer_id);
+
+CREATE TABLE IF NOT EXISTS ai_reminder_receipts (
+    appointment_id INTEGER PRIMARY KEY REFERENCES appointments(id) ON DELETE CASCADE,
+    sent_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

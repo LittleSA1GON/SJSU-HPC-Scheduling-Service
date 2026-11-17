@@ -4,5 +4,7 @@ output/
 tmp/
 agent communication/
 .git/
+.env
+.env.*
 *.db*
 docs/

@@ -24,6 +24,8 @@ public class SecurityConfig {
                              "/api/auth/csrf", "/api/auth/me", "/api/catalog", "/api/slots",
                              "/health", "/metrics", "/metrics/**", "/notification-service/**").permitAll()
             .requestMatchers("/api/provider/**").hasRole("PROVIDER_ADMIN")
+            .requestMatchers("/api/ai/reminders/**").hasRole("PROVIDER_ADMIN")
+            .requestMatchers("/api/ai/**").hasRole("CUSTOMER")
             .requestMatchers("/api/appointments/**").hasRole("CUSTOMER")
             .anyRequest().authenticated())
             .csrf(c -> c.ignoringRequestMatchers("/notification-service/**"))

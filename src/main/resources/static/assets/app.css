@@ -5,3 +5,9 @@
 @media(max-width:410px){.hero img{display:none}.service-choices{gap:8px}.search-panel{padding:16px}.account-name{font-size:12px}.brand{font-size:19px}.provider-form{grid-template-columns:1fr}.provider-form>.field:first-child{grid-column:auto}.page-buttons{order:3;width:100%;justify-content:center}.form-actions .btn{padding:9px 12px}}
 main:focus{outline:none}.hero img{width:185px;height:100px}.confirmation .status.booked{background:#daf4e3;color:var(--green);padding:2px 9px;border-radius:14px;font-weight:700}.confirmation .status.booked .status-dot{display:none}@media(max-width:760px){.hero img{width:145px;height:90px}}
 .service-card{height:100%}
+:root { --assistant-border: #cbd5e1; }
+.assistant-transcript { max-height: 28rem; overflow-y: auto; margin: 1rem 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.assistant-transcript p { padding: .8rem; background: #f4f7fb; border-radius: .4rem; }
+#assistant-form textarea { display: block; width: 100%; margin: .5rem 0; font: inherit; padding: .8rem; }
+#assistant-proposal { padding: 1.2rem; border: 2px solid var(--assistant-border); margin: 1rem 0; }
+.assistant-summary { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.7; }

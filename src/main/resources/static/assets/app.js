@@ -61,7 +61,7 @@ function header() {
     const current = route();
     const links = [['home', 'Home'], ['slots', 'Available Slots'], ...(isProvider()
         ? [['provider', 'Manage Availability'], ['provider-bookings', 'Provider Reservations']]
-        : [['reservations', 'My Reservations']])];
+        : [['reservations', 'My Reservations'], ['assistant', 'AI Assistant']])];
     document.querySelector('#navigation').innerHTML = links.map(([target, name]) => `<a href="#${target}" ${current === target ? 'aria-current="page"' : ''}>${name}</a>`).join('');
     document.querySelector('#account').innerHTML = state.user
         ? `<span class="account-name">${icon('person-fill', '')}${escapeHtml(state.user.displayName)}</span><button class="btn small" data-action="logout">Sign out</button>`
@@ -164,6 +164,8 @@ async function renderProvider(navigationId) {
     if (navigationId !== state.navigationId) return;
     state.providerPage = page;
     main.innerHTML = `${heading('Manage Availability', 'Create service availability and remove unbooked slots. All times are Pacific Time.')}
+        <div class="form-actions"><button class="btn" id="assistant-run-reminders">Run AI reminders now</button></div>
+        <div class="form-actions"><button class="btn" id="assistant-run-reminders">Run AI reminders now</button></div>
         <form id="provider-form" class="provider-form"><label class="field"><span>Compute Service</span><select name="serviceId" required>${options(state.catalog.services, '1')}</select></label><label class="field"><span>Start Time</span><input type="datetime-local" name="startTime" min="${state.catalog.today}T00:00" required></label><label class="field"><span>End Time</span><input type="datetime-local" name="endTime" min="${state.catalog.today}T00:00" required></label><button class="btn primary" type="submit">Add Slot</button></form>
         ${page.items.length ? `<div class="table-wrap"><table><thead><tr><th>Service</th><th>Date & Time</th><th>Duration</th><th>Status</th><th>Action</th></tr></thead><tbody>${page.items.map(slot => `<tr><td>${escapeHtml(slot.serviceName)}</td><td>${dateLabel(slot.startTime)}<span class="table-date">${timeLabel(slot.startTime)} – ${timeLabel(slot.endTime)}</span></td><td>${durationLabel(slot.durationMinutes)}</td><td>${statusBadge(slot.status)}</td><td><button class="btn danger small" data-remove="${slot.slotId}" ${slot.status !== 'OPEN' ? 'disabled' : ''}>${slot.status === 'CLOSED' ? 'Removed' : 'Remove'}</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty"><h2>No availability slots yet</h2><p>Create your first slot using the form above.</p></div>'}${pagination(page, 'provider')}`;
 }
@@ -172,7 +174,7 @@ async function renderRoute() {
     const current = route();
     const navigationId = ++state.navigationId;
     header();
-    if (['book', 'reservations', 'provider', 'provider-bookings'].includes(current) || current.startsWith('confirmation/')) {
+    if (['book', 'reservations', 'assistant', 'provider', 'provider-bookings'].includes(current) || current.startsWith('confirmation/')) {
         if (!state.user) { state.pendingRoute = current; navigate('login'); return; }
         const requiresProvider = current.startsWith('provider');
         if (requiresProvider !== isProvider()) {
@@ -190,6 +192,7 @@ async function renderRoute() {
         else if (current === 'reservations') await renderReservations(navigationId);
         else if (current === 'provider-bookings') await renderReservations(navigationId, true);
         else if (current === 'provider') await renderProvider(navigationId);
+        else if (current === 'assistant') renderAssistant();
         else navigate('home');
     } catch (error) {
         if (navigationId !== state.navigationId || (error.status === 401 && route() === 'login')) return;

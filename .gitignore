@@ -10,4 +10,7 @@ tmp/
 .vscode/
 *.iml
 .DS_Store
+.env
+.env.*
+!.env.example
 agent communication/
